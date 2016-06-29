@@ -2,7 +2,6 @@ package ttlcache
 
 import (
 	"container/list"
-	"errors"
 	"sync"
 	"time"
 )
@@ -26,9 +25,10 @@ type entry struct {
 	expiry time.Time
 }
 
-func NewLRU(size int, defaultTTL time.Duration, onEvict EvictCallback) (*LRU, error) {
+// NewLRU returns a new LRU cache.
+func NewLRU(size int, defaultTTL time.Duration, onEvict EvictCallback) *LRU {
 	if size <= 0 {
-		return nil, errors.New("non-positive cache size")
+		return nil
 	}
 
 	c := &LRU{
@@ -39,12 +39,15 @@ func NewLRU(size int, defaultTTL time.Duration, onEvict EvictCallback) (*LRU, er
 		items:      list.New(),
 	}
 
-	return c, nil
+	return c
 }
 
 // Set sets a value with key into the cache. Returns a boolean value indicating whether
 // a new element is created.
 func (c *LRU) Set(key string, value interface{}, ttl time.Duration) bool {
+	if c == nil {
+		return false
+	}
 	c.Lock()
 	defer c.Unlock()
 	checkTTL := func() {
@@ -91,6 +94,9 @@ func (c *LRU) Set(key string, value interface{}, ttl time.Duration) bool {
 // Get returns the cached value index by key. Return an additional boolean value indicating whether
 // the returned element is stale
 func (c *LRU) Get(key string) (value interface{}, stale bool) {
+	if c == nil {
+		return nil, false
+	}
 	c.Lock()
 	defer c.Unlock()
 	elem, ok := c.table[key]
@@ -113,6 +119,9 @@ func (c *LRU) Get(key string) (value interface{}, stale bool) {
 
 // Remove removes the element cached by key. Return a boolean value for whether a value is deleted.
 func (c *LRU) Remove(key string) bool {
+	if c == nil {
+		return false
+	}
 	c.Lock()
 	defer c.Unlock()
 	elem, ok := c.table[key]
