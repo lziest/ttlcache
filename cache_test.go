@@ -7,10 +7,7 @@ import (
 )
 
 func TestSet(t *testing.T) {
-	c, err := NewLRU(10, 1*time.Second, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := NewLRU(10, 1*time.Second, nil)
 
 	k := "key"
 	v := "value"
@@ -31,10 +28,7 @@ func TestSet(t *testing.T) {
 }
 
 func TestDoubleSet(t *testing.T) {
-	c, err := NewLRU(10, 1*time.Second, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := NewLRU(10, 1*time.Second, nil)
 
 	k := "key"
 	v := "value"
@@ -51,10 +45,7 @@ func TestDoubleSet(t *testing.T) {
 }
 
 func TestSetGet(t *testing.T) {
-	c, err := NewLRU(10, 1*time.Hour, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := NewLRU(10, 1*time.Hour, nil)
 
 	k := "key"
 	v := "value"
@@ -74,10 +65,7 @@ func TestSetGet(t *testing.T) {
 }
 
 func TestGetStale(t *testing.T) {
-	c, err := NewLRU(10, 50*time.Millisecond, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := NewLRU(10, 50*time.Millisecond, nil)
 
 	k := "key"
 	v := "value"
@@ -98,10 +86,7 @@ func TestGetStale(t *testing.T) {
 }
 
 func TestGetMiss(t *testing.T) {
-	c, err := NewLRU(10, 50*time.Millisecond, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := NewLRU(10, 50*time.Millisecond, nil)
 
 	k := "key"
 	v := "value"
@@ -121,10 +106,7 @@ func TestGetMiss(t *testing.T) {
 }
 
 func TestSetRemoveGet(t *testing.T) {
-	c, err := NewLRU(10, 50*time.Millisecond, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := NewLRU(10, 50*time.Millisecond, nil)
 
 	k := "key"
 	v := "value"
@@ -155,10 +137,7 @@ func TestLRU1(t *testing.T) {
 	}
 
 	num := 10
-	c, err := NewLRU(num, 1*time.Hour, MustEvictKey0)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := NewLRU(num, 1*time.Hour, MustEvictKey0)
 
 	for i := 0; i < num; i++ {
 		k := fmt.Sprintf("key-%d", i)
@@ -186,10 +165,7 @@ func TestLRU2(t *testing.T) {
 		}
 	}
 
-	c, err := NewLRU(num, 1*time.Hour, MustEvictKey)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := NewLRU(num, 1*time.Hour, MustEvictKey)
 
 	for i := 0; i < num; i++ {
 		k := fmt.Sprintf("key-%d", i)
@@ -222,10 +198,7 @@ func TestStaleLRU(t *testing.T) {
 	}
 
 	num := 10
-	c, err := NewLRU(num, 100*time.Second, MustEvictKey0)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := NewLRU(num, 100*time.Second, MustEvictKey0)
 
 	for i := 0; i < num; i++ {
 		k := fmt.Sprintf("key-%d", i)
@@ -262,10 +235,7 @@ func TestLRUTimer(t *testing.T) {
 		}
 	}
 
-	c, err := NewLRU(num, 100*time.Second, MustEvictKeyNumMinusOne)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := NewLRU(num, 100*time.Second, MustEvictKeyNumMinusOne)
 
 	for i := 0; i < num; i++ {
 		k := fmt.Sprintf("key-%d", i)
@@ -286,5 +256,27 @@ func TestLRUTimer(t *testing.T) {
 	created := c.Set("new-key", "new-value", 0)
 	if !created {
 		t.Fatal("Set returns wrong value")
+	}
+}
+
+func TestNilCache(t *testing.T) {
+	c := NewLRU(0, 100*time.Second, nil)
+	if c != nil {
+		t.Fatal("0-size cache is created")
+	}
+
+	ret := c.Set("key", "value", 0)
+	if ret != false {
+		t.Fatal("nil cache is bad")
+	}
+
+	val, stale := c.Get("key")
+	if val != nil && stale != false {
+		t.Fatal("nil cache is bad")
+	}
+
+	removed := c.Remove("key")
+	if removed != false {
+		t.Fatal("nil cache is bad")
 	}
 }
