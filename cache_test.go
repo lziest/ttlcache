@@ -129,6 +129,21 @@ func TestSetRemoveGet(t *testing.T) {
 	}
 }
 
+func TestRemoveNonExistent(t *testing.T) {
+	c := NewLRU(10, 50*time.Millisecond, nil)
+
+	k := "key"
+	v := "value"
+	created := c.Set(k, v, 0)
+	if !created {
+		t.Fatal("Set returns wrong value")
+	}
+	found := c.Remove("non-existent")
+	if found {
+		t.Fatal("bad delete")
+	}
+}
+
 func TestLRU1(t *testing.T) {
 	MustEvictKey0 := func(key string, value interface{}) {
 		if key != "key-0" {
