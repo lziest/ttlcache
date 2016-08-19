@@ -6,6 +6,17 @@ import (
 	"time"
 )
 
+const (
+	benchmarkSize = 1024
+)
+
+var (
+	evictPrinter = func(key string, value interface{}) {
+		fmt.Printf("evict key %s, value %v\n", key, value)
+	}
+	tc = NewLRU(benchmarkSize, 1*time.Second, evictPrinter)
+)
+
 func TestSet(t *testing.T) {
 	c := NewLRU(10, 1*time.Second, nil)
 
@@ -294,4 +305,43 @@ func TestNilCache(t *testing.T) {
 	if removed != false {
 		t.Fatal("nil cache is bad")
 	}
+}
+
+// TestGetMany simply set many elements.
+// It aims to catch race condition
+func TestSetMany(t *testing.T) {
+	t.Parallel()
+	for i := 0; i < 1024; i++ {
+		time.Sleep(time.Microsecond)
+		created := tc.Set(fmt.Sprint(i), i, 0)
+		if !created {
+			t.Fatal("Bad set method")
+		}
+	}
+
+}
+
+// TestGetMany simply get elements for many times.
+// It aims to catch race condition
+func TestGetMany(t *testing.T) {
+	t.Parallel()
+	for i := 0; i < 1024; i++ {
+		time.Sleep(time.Microsecond)
+		value, stale := tc.Get(fmt.Sprint(i))
+		// should not have cached nil
+		if value == nil && stale == true {
+			t.Fatal("Bad get method")
+		}
+	}
+}
+
+// TestRemoveMany simply remove elements for many times.
+// It aims to catch race condition
+func TestRemoveMany(t *testing.T) {
+	t.Parallel()
+	for i := 0; i < 1024; i++ {
+		time.Sleep(time.Microsecond)
+		_ = tc.Remove(fmt.Sprint(i))
+	}
+
 }
