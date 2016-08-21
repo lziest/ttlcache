@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	benchmarkSize = 1024
+	benchmarkSize = 512
 )
 
 var (
