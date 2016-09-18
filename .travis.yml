@@ -5,7 +5,7 @@ go:
   - 1.6
   - tip
 
-script: go test -coverprofile=coverage.txt -covermode=atomic -race -v -parallel 4 ./...
+script: go test -bench=. -coverprofile=coverage.txt -covermode=atomic -race -v -parallel 4 ./...
 
 after_success:
       - bash <(curl -s https://codecov.io/bash)
